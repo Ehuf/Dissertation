@@ -1,0 +1,194 @@
+%-----------------------------------------------------------------
+%
+%  style file which allows easy use of conditional text
+%
+%  Author:   Matthias Schunter <schunter@acm.org>,
+%            Michael Waidner <wmi@zurich.ibm.com>
+%            Ahmad-Sadeghi <sadeghi@crypto.rub.de>
+%  Version:  $Id: condtext.sty,v 1.1 2005/10/07 18:56:25 sadeghi Exp $
+%
+% -------------------------------------------------------------------%
+% MANUAL
+% -------------------------------------------------------------------%
+%
+% OPTIONS (for meaning see below macro with identical name):
+% - ShowArticle/HideArticle
+% - ShowReport/HideReport
+% - ShowSubmission/HideSubmission
+%
+% -------------------------------------------------------------------%
+% HIDDEN TEXT
+% -------------------------------------------------------------------%
+%
+% \hide{<TEXT>}
+% \ignore{<TEXT>}               Both just hide <TEXT>.
+%
+% -------------------------------------------------------------------%
+% CONDITIONAL TEXT
+% -------------------------------------------------------------------%
+%
+% \ShowArticle {default}        Causes text in \ArticleOnly{} to be
+% \HideArticle                  shown/hidden.
+% \ArticleOnly{<TEXT>}          <TEXT> is shown only if \ShowArticle
+%                               called before.
+%
+% \ShowReport {default}         Causes text in \ReportOnly{} to be
+% \HideReport                   shown/hidden.
+% \ReportOnly{<TEXT>}           <TEXT> is shown only if \ShowReport is
+%                               called before.
+%
+% \ShowSubmission {default}     Causes text in \SubmissionOnly{} to
+% \HideSubmission               be shown/hidden.
+% \SubmissionOnly{<TEXT>}       <TEXT> is shown only if
+%                               \ShowSubmission is called before.
+%
+%                               BUG: \ReportOnly{} etc. do not work 
+%                               inside \thanks{}
+%
+% Similar commands can be generated using the \condTextDef; see
+% below.
+% -------------------------------------------------------------------%
+% END OF MANUAL
+% -------------------------------------------------------------------%
+
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+
+% This command parses the CVS Date and uses it as the package date
+\def\CvsDateToPackage Date: #1/#2/#3 #4:#5:#6 {%
+ \ProvidesPackage{condtext}[#1/#2/#3 Sirene Conditional Text Style]} 
+\catcode`\$=9\relax         % Now, "$" is ignored
+\CvsDateToPackage $Date: 2005/10/07 18:56:25 $  % Here, the CVS Date is parsed and used
+\catcode`\$=11\relax        % Now "$" is just a normal letter
+% Print the CVS Id
+\typeout{>>> Sirene Conditional Text Style $Id: condtext.sty,v 1.1 2005/10/07 18:56:25 sadeghi Exp $}
+\catcode`\$=3\relax         % Now "$" is the math-separator again
+
+%% Log of Changes: See end of file.
+
+% ===================================================================%
+% Imported packages without immediate effects on formatting
+\RequirePackage{ifthen} 
+
+% ===================================================================%
+% Invisible text
+% -------------------------------------------------------------------%
+
+\providecommand{\ignore}[1]{}
+\providecommand{\hide}[1]{}
+
+% -------------------------------------------------------------------%
+% Some macros that switch text on and off
+% -------------------------------------------------------------------%
+% This automates the definition of macros like \ifArticle, etc.
+% \condTextDef{Paper}     ---- generates a new switch for Paper;
+%                              default is ``on''
+% \condText{Paper}{text}  ---- shows ``text'' only if the switch for
+%                              paper is ``on''
+% \condShow{Paper}        ---- switch ``on''
+% \condHide{Paper}        ---- switch ``off''
+\newcommand{\condTextDef}[1]{
+        % \typeout{>>> Conditional text '#1' defined.}
+        \newboolean{condTextBool#1}
+        \setboolean{condTextBool#1}{true}}
+\newcommand{\condShow}[1]{
+        % \typeout{>>> '#1' is shown!}
+        \setboolean{condTextBool#1}{true}}
+\newcommand{\condHide}[1]{
+        % \typeout{>>> '#1' is hidden!}
+        \setboolean{condTextBool#1}{false}}
+\newcommand{\condText}[2]{%
+        \ifthenelse{\boolean{condTextBool#1}}{#2}{}}
+
+% -------------------------------------------------------------------%
+\condTextDef{Article}
+\condTextDef{Report}
+\condTextDef{Submission}
+\newcommand{\ShowArticle}[0]{\condShow{Article}}
+\newcommand{\HideArticle}[0]{\condHide{Article}}
+\newcommand{\ShowReport}[0]{\condShow{Report}}
+\newcommand{\HideReport}[0]{\condHide{Report}}
+\newcommand{\ShowSubmission}[0]{\condShow{Submission}}
+\newcommand{\HideSubmission}[0]{\condHide{Submission}}
+
+\newcommand{\ArticleOnly}[1]{\condText{Article}{#1}}
+\newcommand{\ReportOnly}[1]{\condText{Report}{#1}}
+\newcommand{\SubmissionOnly}[1]{\condText{Submission}{#1}}
+
+\newcommand{\ifArticle}[2]{%
+        \ifthenelse{\boolean{condTextBoolArticle}}{#1}{#2}}
+\newcommand{\ifSubmission}[2]{%
+        \ifthenelse{\boolean{condTextBoolSubmission}}{#1}{#2}}
+\newcommand{\ifReport}[2]{%
+        \ifthenelse{\boolean{condTextBoolReport}}{#1}{#2}}
+
+
+% Options
+\DeclareOption{HideArticle}{\HideArticle}
+\DeclareOption{HideReport}{\HideReport}
+\DeclareOption{HideSubmission}{\HideSubmission}
+\DeclareOption{ShowArticle}{\ShowArticle}
+\DeclareOption{ShowReport}{\ShowReport}
+\DeclareOption{ShowSubmission}{\ShowSubmission}
+\ProcessOptions
+
+% $Log: condtext.sty,v $
+% Revision 1.1  2005/10/07 18:56:25  sadeghi
+% *** empty log message ***
+%
+% Revision 1.1  2005/08/05 15:55:53  arupp
+% *** empty log message ***
+%
+% Revision 1.1  2005/04/03 10:57:53  sadeghi
+% consitional textCVS: ----------------------------------------------------------------------
+%
+% Revision 1.1  2005/03/15 09:57:53  gross
+% Initiale Version Browser Modell fuer ESORICS
+%
+% Revision 1.1  2005/03/15 09:53:12  tgr
+% Initiale Version Browser Modell fuer ESORICS
+%
+% Revision 1.1  2004/10/25 15:51:55  tgr
+% First proposal for WSFPI with browser model.
+%
+% WSPFI Proof completely restructured:
+% - Model section with machine definitions for B, U, C and S
+% as well as secchan
+% - submodule sections now under corresponding machines
+%
+% Revision 1.1  2004/09/02 09:28:54  tgr
+% WSFPI Proofsketch
+% including submitted version and clearance formular
+%
+% Revision 1.1  2004/05/03 08:49:18  bpf
+% The usual styles.
+%
+% Revision 1.1  2004/02/07 17:26:08  bpf
+% Standard-Styles fuer Latex-Umsetzung
+%
+% Revision 1.1  2003/07/25 13:34:49  mbc
+% General Composition Theorem, Hauptbeweis einmal durch
+%
+% Revision 1.1  2003/04/08 23:49:12  mbc
+% Syntax und Semantic formal(er) gemacht. Mehr Prosa geschrieben,
+% Semantic mehr erklaert, Formale Definition von Waeldern, Obligation models,
+% and Condition Models als Subsection vorgezogen, neue Style-File eingecheckt
+% (Beweise und Lemmas sehen so besser aus + meine typischen Kommandos sind
+% definiert :-) )
+%
+% Revision 1.1  2001/08/27 11:52:59  mbackes
+% Start
+%
+% Revision 1.1  2001/07/06 10:17:28  mbackes
+% BaPf_01.tex modifiziert (kleine Aenderungen an THIofH und Sysnr{1}), Beweis
+% ueberarbeitet, lokale Styles eingefuegt, damit keine Probleme beim texen
+%
+% Revision 2.1  2000/06/27 13:39:37  lina
+% * Version upgrade to 2.1 (MSc)
+%
+% Revision 1.2  2000/04/30 15:45:10  lina
+% ifSubmission und ifReport hinzugefuegt. (wmi)
+%
+% Revision 1.1  2000/01/24 16:48:41  lina
+% split sirene.sty and moved to separate directory <steiner@acm.org>
+%
+

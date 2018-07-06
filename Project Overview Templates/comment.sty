@@ -1,0 +1,317 @@
+%-----------------------------------------------------------------
+%
+%  style file covering commands for annotational and editorial commands
+%
+%  Author:   Matthias Schunter <schunter@acm.org>,
+%            Michael Waidner <wmi@zurich.ibm.com>
+%  Version:  $Id: comment.sty,v 1.2 2005/10/10 20:49:24 sadeghi Exp $
+%  Notes:
+%  - shouldn't \ShowComments just revert to default and/or option
+%    specified? Shouldn't option HideComments be enforced everywhere?
+%  - merge with sti's annotation style?
+%
+% -------------------------------------------------------------------%
+% MANUAL
+% -------------------------------------------------------------------%
+%
+% OPTIONS (for meaning see below macro with identical name):
+% - ShowComments/HideComments
+%
+% MACROS:
+% \ShowComments {default}       Causes comments to be shown.
+% \HideComments                 Causes comments to be hidden.
+%
+% \comment{<WHO>}{<WHAT>}       Inserts a comment by <WHO> with
+%                               contents <WHAT>. Comments are shown as
+%                               footnotes but use special footnote
+%                               numbers. 
+%                               They can only be referenced by a \label{} 
+%                               inside <WHAT>
+%
+% \wmi{<WHAT>}                  = \comment{MWa}{<WHAT>}
+% \bpf{<WHAT>}                  = \comment{BPf}{<WHAT>}
+% \msc{<WHAT>}                  = \comment{MSc}{<WHAT>}
+%
+% \editor{<TEXT>}               Inserts <TEXT> in the main text, marks
+%                               it as ``Editor's note,'' and draws a 
+%                               box around it. 
+%
+% \CommentOnly{<TEXT>}          Inserts <TEXT> in the main text, i.e.,
+%                               not as footnotes. Begin and end of the
+%                               comment are marked.
+%                               
+% ENVIRONMENTS:
+% \begin{commentonly}           Same as \CommentOnly{<TEXT>} 
+%       <TEXT>
+% \end{commentonly}
+%
+% \begin{commentonly}[MSc]      Like \CommentOnly{<TEXT>} with author MSc
+%       <TEXT>
+% \end{commentonly}
+% 
+%                               
+% -------------------------------------------------------------------%
+% END OF MANUAL
+% -------------------------------------------------------------------%
+
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+
+% This command parses the CVS Date and uses it as the package date
+\def\CvsDateToPackage Date: #1/#2/#3 #4:#5:#6 {%
+ \ProvidesPackage{comment}[#1/#2/#3 Sirene Comment Style]} 
+\catcode`\$=9\relax         % Now, "$" is ignored
+\CvsDateToPackage $Date: 2005/10/10 20:49:24 $  % Here, the CVS Date is parsed and used
+\catcode`\$=11\relax        % Now "$" is just a normal letter
+% Print the CVS Id
+\typeout{>>> Sirene Comment Style $Id: comment.sty,v 1.2 2005/10/10 20:49:24 sadeghi Exp $}
+\catcode`\$=3\relax         % Now "$" is the math-separator again
+
+%% Log of Changes: See end of file.
+
+% ===================================================================%
+% Imported packages without immediate effects on formatting
+\RequirePackage{ifthen} 
+\RequirePackage{condtext} 
+
+% Comments. In principle they are defined like Article, etc. in
+% condtext.sty, but comments are specially marked, either with a
+% marginal marker, or within the text.  
+% -------------------------------------------------------------------%
+
+\condTextDef{Comments}
+\newcommand{\ShowComments}[0]{\condShow{Comments}}
+\newcommand{\HideComments}[0]{\condHide{Comments}}
+
+\newcounter{commentcounter}
+\newcounter{footnotetmp} % used to store ``footnote'' temporarily
+\newcommand{\comment}[2]{\lcomment{A}{#1}{#2}}
+\newcommand{\lcomment}[3]{%
+        \ifthenelse{\boolean{condTextBoolComments}}{%
+                        \let\labelpop\@currentlabel% stores the current label
+                \refstepcounter{commentcounter}%
+                \setcounter{footnotetmp}{\thefootnote}%
+                \setlength{\fboxsep}{0.1cm}%
+                \framebox[2\width][c]{{\scriptsize {\sf #1\thecommentcounter}}}%
+                %\marginpar{{\scriptsize {\sf #1\thecommentcounter}}}%
+                \renewcommand{\thefootnote}{{\bf {\sf #1\thecommentcounter}}}%
+                \footnotetext{{\bf #2:} #3}%
+                \setcounter{footnote}{\thefootnotetmp}%
+                            \let\@currentlabel\labelpop% restores the label
+                \renewcommand{\thefootnote}{\arabic{footnote}}}{}}
+
+\providecommand{\bpf}[1]{\lcomment{B}{BPf}{#1}}
+\providecommand{\as}[1]{\lcomment{A}{ASa}{#1}}
+\providecommand{\ar}[1]{\lcomment{An}{ARu}{#1}}
+\providecommand{\cst}[1]{\lcomment{C}{CSt}{#1}}
+\providecommand{\gl}[1]{\lcomment{Gl}{GLe}{#1}}
+\providecommand{\eb}[1]{\lcomment{E}{EBa}{#1}}
+\providecommand{\msc}[1]{\lcomment{m}{MSc}{#1}}
+\providecommand{\wmi}[1]{\lcomment{M}{MWa}{#1}}
+\providecommand{\bau}[1]{\lcomment{b}{BBa}{#1}}
+\providecommand{\mba}[1]{\lcomment{b}{MBa}{#1}}
+\providecommand{\tgr}[1]{\lcomment{T}{TGr}{#1}}
+\providecommand{\fyi}[1]{\lcomment{F}{FYI}{#1}}
+\providecommand{\ser}[1]{\lcomment{s}{SCa}{#1}}
+\providecommand{\sbl}[1]{\lcomment{S}{SBl}{#1}}
+\providecommand{\zeb}[1]{\lcomment{Z}{Zeb}{#1}}
+\providecommand{\csm}[1]{\lcomment{S}{CSm}{#1}}
+\providecommand{\avm}[1]{\lcomment{Z}{AvM}{#1}}
+\providecommand{\kco}[1]{\lcomment{K}{KCo}{#1}}
+\providecommand{\rma}[1]{\lcomment{R}{RMa}{#1}}
+\providecommand{\?}[1]{\lcomment{???}{OPEN QUESTION}{#1}}
+\providecommand{\XXX}[1]{\lcomment{X}{XXX TODO}{#1}}
+
+\newcommand{\CommentMarker}[1]{%
+        \begin{center}
+        {\bf {\sf --- #1 Comment --- }}
+        \end{center}}
+\newcommand{\CommentOnly}[1]{
+        \condText{Comments}{
+        \CommentMarker{Begin}
+        \begin{sffamily}
+        \small
+        #1 
+        \end{sffamily}
+        \CommentMarker{End}}}
+
+\newcommand{\editor}[1]{%
+        \condText{Comments}{%
+                \setlength{\fboxsep}{0.5cm}%
+                \framebox[0.9\columnwidth][c]{%
+                \parbox{0.85\columnwidth}{%
+                {\textbf{Editor's note}:\\[0.2cm]%
+                \textit{#1}}}}}}
+
+\newcommand{\tgreditor}[1]{%
+        \condText{Comments}{%
+                \setlength{\fboxsep}{0.5cm}%
+                \framebox[0.9\columnwidth][c]{%
+                \parbox{0.85\columnwidth}{%
+                {\textbf{Thomas' note}:\\[0.2cm]%
+                \textit{#1}}}}}}
+                
+\newcommand{\sbleditor}[1]{%
+        \condText{Comments}{%
+                \setlength{\fboxsep}{0.5cm}%
+                \framebox[0.9\columnwidth][c]{%
+                \parbox{0.85\columnwidth}{%
+                {\textbf{Soeren's note}:\\[0.2cm]%
+                \textit{#1}}}}}}
+                
+\newcommand{\smoeditor}[1]{%
+        \condText{Comments}{%
+                \setlength{\fboxsep}{0.5cm}%
+                \framebox[0.9\columnwidth][c]{%
+                \parbox{0.85\columnwidth}{%
+                {\textbf{Sebastian's note}:\\[0.2cm]%
+                \textit{#1}}}}}}
+                
+\newcommand{\csmeditor}[1]{%
+        \condText{Comments}{%
+                \setlength{\fboxsep}{0.5cm}%
+                \framebox[0.9\columnwidth][c]{%
+                \parbox{0.85\columnwidth}{%
+                {\textbf{Chris' note}:\\[0.2cm]%
+                \textit{#1}}}}}}
+
+% The environment {commentonly}
+\newenvironment{commentonly}[1][noname]{%
+  \setbox\@tempboxa\vbox\bgroup\trivlist%
+  \item\centerline{\bf {\sf --- Begin Comment 
+    \ifthenelse{\equal{#1}{noname}}{}{(#1)} --- }}\begin{sffamily}%
+  \item%
+}{%
+  \item\centerline{\bf {\sf --- End Comment --- }}\end{sffamily}\endtrivlist\egroup%
+  \expandafter\condText{Comments}{\unvbox\@tempboxa}%
+}%
+
+%-----------------------------------------------------------------
+%                To Be Done
+%-----------------------------------------------------------------
+%   two special forms of editor notes are the
+%         \ToBeDone{what}
+%         \ToBeDoneBy{whom}{what}
+%   commands. if \showComments it will put the text in a framed box (labelled To Be Done).
+%   In any case it will printout a warning on the commandline
+%
+%   Note: output is controlled by the option showComments
+%
+
+\newcommand{\TBD}{\protect\condText{Comments}{\textbf{To Be Done!}}}
+
+\newcommand{\ToBeDone}[1]{%
+    \typeout{Warning: Something still needs to be done!}%
+    \condText{Comments}{%
+          \normalsize
+      \noindent\newline
+      \fbox{\parbox{0.9\columnwidth}{\textbf{\TBD:} #1}}
+      \newline
+    }
+}
+\newcommand{\ToBeDoneBy}[2]{%
+      \typeout{Warning: Something still needs to be done by #1!}%
+      \condText{Comments}{%
+      \normalsize
+      \noindent\newline
+      \fbox{\parbox{0.9\columnwidth}{\textbf{\TBD by #1:} #2}}
+      \newline
+    }
+}
+
+% Options
+\DeclareOption{HideComments}{\HideComments}
+\DeclareOption{ShowComments}{\ShowComments}
+\ProcessOptions
+
+% $Log: comment.sty,v $
+% Revision 1.2  2005/10/10 20:49:24  sadeghi
+% Corrected the comment command for Chris CVS: ----------------------------------------------------------------------
+%
+% Revision 1.1  2005/10/07 18:57:12  sadeghi
+% *** empty log message ***
+%
+% Revision 1.1  2005/08/05 15:55:53  arupp
+% *** empty log message ***
+%
+% Revision 1.1  2005/04/03 09:40:23  sadeghi
+% Ein style fuer struktuiertes Kommentieren . CVS: ----------------------------------------------------------------------
+%
+% Revision 1.2  2005/03/18 09:39:38  sadeghi
+% Add my initials CVS: ----------------------------------------------------------------------
+%
+% Revision 1.1  2004/10/26 10:49:49  gross
+% Erste Verion des WSFPI Papers mit Browser Modell
+%
+% Radikal umstrukturiert:
+% - Modellkapitel
+% - Formales Interface, Requirements und Trust zu Anfang
+% - Submodule Kapitel aufgeloest
+% - wiederverwendbare Kapitel zu den zugehoerigen Maschinen
+%
+% Revision 1.2  2004/10/25 19:18:47  tgr
+% Restructured further.
+%
+% Included protocol interface into the model
+% moved trust scenario to the front to the interface description
+%
+% Revision 1.1  2004/10/25 15:51:55  tgr
+% First proposal for WSFPI with browser model.
+%
+% WSPFI Proof completely restructured:
+% - Model section with machine definitions for B, U, C and S
+% as well as secchan
+% - submodule sections now under corresponding machines
+%
+% Revision 1.2  2004/09/05 15:29:08  bpf
+% \fyi eingefuegt
+%
+% Revision 1.1  2004/09/02 09:28:54  tgr
+% WSFPI Proofsketch
+% including submitted version and clearance formular
+%
+% Revision 1.2  2004/05/24 16:51:02  tgr
+% Added \tgr comment tag to the comment.sty
+% Added some thoughts about cross-protocol signature attacks,
+% certification, and URI relations in the section
+% "Discussion of the Assumptions"
+%
+% Revision 1.1  2004/05/03 08:49:18  bpf
+% The usual styles.
+%
+% Revision 1.1  2004/02/07 17:26:08  bpf
+% Standard-Styles fuer Latex-Umsetzung
+%
+% Revision 1.1  2003/07/25 13:34:49  mbc
+% General Composition Theorem, Hauptbeweis einmal durch
+%
+% Revision 1.1  2003/04/08 23:49:12  mbc
+% Syntax und Semantic formal(er) gemacht. Mehr Prosa geschrieben,
+% Semantic mehr erklaert, Formale Definition von Waeldern, Obligation models,
+% and Condition Models als Subsection vorgezogen, neue Style-File eingecheckt
+% (Beweise und Lemmas sehen so besser aus + meine typischen Kommandos sind
+% definiert :-) )
+%
+% Revision 1.1  2001/08/27 11:52:58  mbackes
+% Start
+%
+% Revision 1.1  2001/07/06 10:17:28  mbackes
+% BaPf_01.tex modifiziert (kleine Aenderungen an THIofH und Sysnr{1}), Beweis
+% ueberarbeitet, lokale Styles eingefuegt, damit keine Probleme beim texen
+%
+% Revision 2.2  2001/06/13 12:32:13  pfitzb
+% \mba fuer Michael Backes
+%
+% Revision 2.1  2000/06/27 13:39:36  lina
+% * Version upgrade to 2.1 (MSc)
+%
+% Revision 1.3  2000/04/13 17:43:27  lina
+% \bau added (wmi)
+%
+% Revision 1.2  2000/02/06 09:17:09  lina
+% * A "Warning: Something needs to be done" is not printed
+%   in the logfile for each ToBeDone, even if Comments are not
+%   shown (MSc)
+%
+% Revision 1.1  2000/01/24 16:48:41  lina
+% split sirene.sty and moved to separate directory <steiner@acm.org>
+%
